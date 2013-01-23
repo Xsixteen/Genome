@@ -25,10 +25,13 @@ public class Start {
 		System.out.println("Number of Nodes by Tree Function: " + full);
 		System.out.println("Preforming Tree Reduction");
 		g.checkBoards(T.root);
+		System.out.println(T.root.numChildren + " children");
 		partial = T.countNodes();
 		System.out.println("Number of Nodes by Tree Function: " + partial + "\nOptimatization %: " + (partial/full)*100);
 		System.out.println("Total memory (bytes): " +  Runtime.getRuntime().totalMemory());
-	
+		System.out.println("Displaying Winning Branches for " + T.root.numChildren + " children");
+		g.countWins(T.root);
+		g.showChildrenWins(T.root);
 		end =  System.currentTimeMillis();  
 		System.out.println("This Program took: "+ ((end - start)/1000) + " Seconds to execute.");
 	}

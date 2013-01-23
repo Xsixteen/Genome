@@ -162,18 +162,35 @@ public class Genesis {
 	}
 	public void checkBoards(Node root) {
 		for (int q=0; q < root.numChildren; q++) {
-			if(root.getChild(q).numChildren > 0){
-				if(validate(root.getChild(q).matrix) != 1)
-				{
-					root.removeChild(q);
-				} else {
+			if(root.getChild(q).numChildren > 0) {
 					checkBoards(root.getChild(q));
-				}
 			} else {
 				if(validate(root.getChild(q).matrix) != 1) {
 					root.removeChild(q);
-				}	
+				} else {
+					root.winners++;
+				}
 			}
 		}
 	}
+	
+	public void countWins(Node root) {
+		for (int q=0; q < root.numChildren; q++) {
+			if(root.getChild(q).numChildren > 0) {
+				root.winners = root.winners + root.getChild(q).winners;
+				countWins(root.getChild(q));
+				
+			}
+		}
+	}
+	public void showChildrenWins(Node root) {
+		for (int q=0; q < root.numChildren; q++) {
+			if(root.getChild(q).numChildren > 0){
+				root.getChild(q).matrix.print(5, 2);
+				System.out.println("Wins for Child Branch: " + root.getChild(q).winners);
+			}
+		}
+			
+	}
+	
 }

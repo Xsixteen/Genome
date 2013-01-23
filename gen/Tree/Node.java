@@ -10,6 +10,7 @@ public class Node {
 	public ArrayList<Node> children;
     public Node parent;
     public Matrix matrix;
+    public int winners=0;
     public int numChildren=0;
     
     public Node() {
