@@ -168,19 +168,21 @@ public class Genesis {
 				if(validate(root.getChild(q).matrix) != 1) {
 					root.removeChild(q);
 				} else {
-					root.winners++;
+					root.getChild(q).winners++;
 				}
 			}
 		}
-	}
+	
+		}
 	
 	public void countWins(Node root) {
-		for (int q=0; q < root.numChildren; q++) {
-			if(root.getChild(q).numChildren > 0) {
-				root.winners = root.winners + root.getChild(q).winners;
-				countWins(root.getChild(q));
-				
+		if (root.numChildren > 0) {
+			for (int q=0; q < root.numChildren; q++) {
+					countWins(root.getChild(q));
+					root.winners = root.winners + root.getChild(q).winners;
 			}
+		} else { 
+			root.winners++;
 		}
 	}
 	public void showChildrenWins(Node root) {
