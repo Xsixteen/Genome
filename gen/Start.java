@@ -1,5 +1,7 @@
 package gen;
 
+import java.util.Scanner;
+
 import Jama.Matrix;
 import gen.Tree.*;
 
@@ -12,8 +14,14 @@ public class Start {
 		Matrix m;		
 		long start;
 		long end;
+		int playerid=0;
+		boolean loop=true;
+		final int P_X = 1;
+		final int P_O = -1;
 		float full, partial;
-		Genesis g = new Genesis();
+		
+	    Scanner scanner = new Scanner(System.in);
+		Genesis g = new Genesis(P_X);
 		Tree T = g.getTree();
 
 		start = System.currentTimeMillis();  
@@ -34,5 +42,50 @@ public class Start {
 		g.showChildrenWins(T.root);
 		end =  System.currentTimeMillis();  
 		System.out.println("This Program took: "+ ((end - start)/1000) + " Seconds to execute.");
+		
+		System.out.println("Welcome to Tic-Tac-Toe Game Tree Analyzer");
+		System.out.println("Create your Board!  First tell me what player you are.  1 for X, 2 for O");
+		String player = scanner.nextLine();
+		
+		if (player.equals("1")) {
+			playerid = 1;
+		} else {
+			playerid = -1;
+		}
+		
+		g = new Genesis(playerid);
+		T = g.getTree();
+		while(loop) {
+			System.out.println("Current Board as follows:");
+			g.printBoard(g.getCurrentBoard());
+			System.out.println("Press 1 to place your move.  Press 2 to generate Optimal Solutions");
+			String menu = scanner.nextLine();
+			
+			//Place YOUR move
+			if (menu.equals("1")) {
+				System.out.println("Enter the X (row) of  your move:");
+				String row = scanner.nextLine();
+				System.out.println("Enter the Y (column)1 of  your move:");
+				String col = scanner.nextLine();
+				g.updateMove(playerid, Integer.parseInt( row )-1, Integer.parseInt(col)-1);
+				
+				
+				System.out.println("Put in O's Move:");
+				System.out.println("Enter the X (row) of  your opponents move:");
+				row = scanner.nextLine();
+				System.out.println("Enter the Y (column) of  your opponents move:");
+				col = scanner.nextLine();
+				g.updateMove((-1*playerid), Integer.parseInt( row )-1, Integer.parseInt(col)-1);
+			} else if (menu.equals("2")) {
+				g.updateRoot();
+				g.generate();
+				T = g.getTree();
+				g.checkBoards(T.root);
+				g.countWins(T.root);
+				g.showChildrenWins(T.root);
+				
+				System.out.println("Number of Nodes:: " + T.countNodes());
+			}
+		}
 	}
 }

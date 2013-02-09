@@ -6,20 +6,23 @@ public class Genesis {
 
 	private static Matrix curBoard;
 	private static Tree T;
+	private int player;
 	private int statistic = 0;
-	final int P_X = 1;
-	final int P_O = -1;
+	public final int P_X = 1;
+	public final int P_O = -1;
 	
-	public Genesis() {
+	public Genesis(int aPlayer) {
 		double[][] empty = {{0,0,0},{0,0,0},{0,0,0}}; 
 		//initialize the current board to all 0.0
 		curBoard = new Matrix (empty);
-		
+		player = aPlayer;
 		//Create the Game Tree
 		T = new Tree();
 	
 	}
-	
+	public Matrix getCurrentBoard() {
+		return curBoard;
+	}
 	public Tree getTree() {
 		return T;
 	}
@@ -30,11 +33,19 @@ public class Genesis {
 	public void updateMove(Matrix matrix, int player, int x, int y) {
 		matrix.set(x, y, (double) player);
 	}
+	public void updateMove(int player, int x, int y) {
+		curBoard.set(x, y, (double) player);
+	}
+	//updates the root of the tree to the current matrix.
+	public void updateRoot() {
+		T = new Tree();
+		T.root.matrix = curBoard;
+	}
 	
 	//Generate against any matrix. 
-	public Matrix generate(Matrix matrix) throws InterruptedException {
+	public Matrix generate(Matrix matrix, int aPlayer) throws InterruptedException {
 		int moves = countZero(matrix);
-		spin(T.root, matrix, P_O);
+		spin(T.root, matrix, aPlayer);
 		
 		return matrix;
 	}
@@ -43,7 +54,7 @@ public class Genesis {
 	public void generate() throws InterruptedException {
 		int moves = countZero(curBoard);
 		//Okay so now its O's turn. Leaving a possible of moves - 1 
-		spin(T.root, curBoard, P_O);
+		spin(T.root, curBoard, player);
 	}
 	
 	//Spin means spin through recursion! Used to generate a game tree from possible open spaces. 
@@ -78,7 +89,7 @@ public class Genesis {
 			}
 		}
 		for (int q=0; q < root.numChildren; q++) {
-			if(countZero(root.getChild(q).matrix) != 0){
+			if(countZero(root.getChild(q).matrix) != 0 && validate(root.getChild(q).matrix, -1*player) != 1){
 				if (Player == P_O)
 					 spin(root.getChild(q), root.getChild(q).matrix, P_X);
 				else
@@ -104,70 +115,146 @@ public class Genesis {
 		return zeroes;
 	}
 	
+	public void printBoard(Matrix m) {
+		for (int i=0; i< m.getRowDimension(); i++) {
+			System.out.print("| ");
+			for(int j=0; j< m.getColumnDimension(); j++) {
+				if(m.get(i,j) == P_X) {
+					System.out.print(" X ");
+				} else if(m.get(i,j) == P_O) {
+					System.out.print(" O ");
+				} else {
+					System.out.print(" - ");
+				}
+			}
+			System.out.println(" |");
+		}
+	}
+	
 	private int validate(Matrix m) {
 		float x,y,z;
 		//Check Rows for Wins
 		x = (float) m.get(0,0);
 		y = (float) m.get(0,1);
 		z = (float) m.get(0,2);
-		if((x+y+z == 3.0) || (x+y+z == -3.0)){
+		if(x+y+z == (3.0 * player)){
 			return 1;
 		}
 		x = (float) m.get(1,0);
 		y = (float) m.get(1,1);
 		z = (float) m.get(1,2);
-		if(x+y+z == 3.0 || x+y+z == -3.0){
+		if(x+y+z == (3.0 * player)){
 			return 1;
 		}
 		x = (float) m.get(2,0);
 		y = (float) m.get(2,1);
 		z = (float) m.get(2,2);
-		if(x+y+z == 3.0 || x+y+z == -3.0){
+		if(x+y+z == (3.0 * player)){
 			return 1;
 		}
 		//Check Columns for Wins
 		x = (float) m.get(0,0);
 		y = (float) m.get(1,0);
 		z = (float) m.get(2,0);
-		if(x+y+z == 3.0 || x+y+z == -3.0){
+		if(x+y+z == (3.0 * player)){
 			return 1;
 		}
 		x = (float) m.get(0,1);
 		y = (float) m.get(1,1);
 		z = (float) m.get(2,1);
-		if(x+y+z == 3.0 || x+y+z == -3.0){
+		if(x+y+z == (3.0 * player)){
 			return 1;
 		}
 		x = (float) m.get(0,2);
 		y = (float) m.get(1,2);
 		z = (float) m.get(2,2);
-		if(x+y+z == 3.0 || x+y+z == -3.0){
+		if(x+y+z == (3.0 * player)){
 			return 1;
 		}
 		//Check Diaganals for Wins
 		x = (float) m.get(0,0);
 		y = (float) m.get(1,1);
 		z = (float) m.get(2,2);
-		if(x+y+z == 3.0 || x+y+z == -3.0){
+		if(x+y+z == (3.0 * player)){
 			return 1;
 		}
 		x = (float) m.get(0,2);
 		y = (float) m.get(1,1);
 		z = (float) m.get(2,0);
-		if(x+y+z == 3.0 || x+y+z == -3.0){
+		if(x+y+z == (3.0 * player)){
 			return 1;
 		}
 		//Not a Winner Sorry Buddy
 		return 0;
 	}
+	
+	private int validate(Matrix m, int who) {
+		float x,y,z;
+		//Check Rows for Wins
+		x = (float) m.get(0,0);
+		y = (float) m.get(0,1);
+		z = (float) m.get(0,2);
+		if(x+y+z == (3.0 * who)){
+			return 1;
+		}
+		x = (float) m.get(1,0);
+		y = (float) m.get(1,1);
+		z = (float) m.get(1,2);
+		if(x+y+z == (3.0 * who)){
+			return 1;
+		}
+		x = (float) m.get(2,0);
+		y = (float) m.get(2,1);
+		z = (float) m.get(2,2);
+		if(x+y+z == (3.0 * who)){
+			return 1;
+		}
+		//Check Columns for Wins
+		x = (float) m.get(0,0);
+		y = (float) m.get(1,0);
+		z = (float) m.get(2,0);
+		if(x+y+z == (3.0 * who)){
+			return 1;
+		}
+		x = (float) m.get(0,1);
+		y = (float) m.get(1,1);
+		z = (float) m.get(2,1);
+		if(x+y+z == (3.0 * who)){
+			return 1;
+		}
+		x = (float) m.get(0,2);
+		y = (float) m.get(1,2);
+		z = (float) m.get(2,2);
+		if(x+y+z == (3.0 * who)){
+			return 1;
+		}
+		//Check Diaganals for Wins
+		x = (float) m.get(0,0);
+		y = (float) m.get(1,1);
+		z = (float) m.get(2,2);
+		if(x+y+z == (3.0 * who)){
+			return 1;
+		}
+		x = (float) m.get(0,2);
+		y = (float) m.get(1,1);
+		z = (float) m.get(2,0);
+		if(x+y+z == (3.0 * who)){
+			return 1;
+		}
+		//Not a Winner Sorry Buddy
+		return 0;
+	}
+	//This function prunes the tree for only winning children leaves
 	public void checkBoards(Node root) {
 		for (int q=0; q < root.numChildren; q++) {
 			if(root.getChild(q).numChildren > 0) {
 					checkBoards(root.getChild(q));
 			} else {
-				if(validate(root.getChild(q).matrix) != 1) {
+				//Validate Leaf Nodes only.
+				if(validate(root.getChild(q).matrix) != 1 || validate(root.getChild(q).matrix, (player*-1)) == 1) {
 					root.removeChild(q);
 				} else {
+					// This is a winning leaf
 					root.getChild(q).winners++;
 				}
 			}
@@ -182,14 +269,20 @@ public class Genesis {
 					root.winners = root.winners + root.getChild(q).winners;
 			}
 		} else { 
-			root.winners++;
+			//root.winners++;
 		}
 	}
 	public void showChildrenWins(Node root) {
+		//Now Print!
 		for (int q=0; q < root.numChildren; q++) {
 			if(root.getChild(q).numChildren > 0){
-				root.getChild(q).matrix.print(5, 2);
+				//root.getChild(q).matrix.print(5, 2);
+				printBoard(root.getChild(q).matrix);
+				if(validate(root.getChild(q).matrix) == 1) {
+				System.out.println("WINNING MOVE!");
+				} else { 
 				System.out.println("Wins for Child Branch: " + root.getChild(q).winners);
+				}
 			}
 		}
 			
