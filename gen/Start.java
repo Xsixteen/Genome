@@ -19,6 +19,7 @@ public class Start {
 		final int P_X = 1;
 		final int P_O = -1;
 		float full, partial;
+
 		
 	    Scanner scanner = new Scanner(System.in);
 		Genesis g = new Genesis(P_X);

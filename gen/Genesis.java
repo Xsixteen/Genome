@@ -1,4 +1,6 @@
 package gen;
+import java.util.Arrays;
+
 import gen.Tree.*;
 import Jama.*;
 
@@ -273,18 +275,29 @@ public class Genesis {
 		}
 	}
 	public void showChildrenWins(Node root) {
+		mList[] list = new mList[root.numChildren];
+		int z = 0;
 		//Now Print!
+
 		for (int q=0; q < root.numChildren; q++) {
 			if(root.getChild(q).numChildren > 0){
-				//root.getChild(q).matrix.print(5, 2);
-				printBoard(root.getChild(q).matrix);
-				if(validate(root.getChild(q).matrix) == 1) {
-				System.out.println("WINNING MOVE!");
-				} else { 
-				System.out.println("Wins for Child Branch: " + root.getChild(q).winners);
-				}
+				list[z] = new mList(root.getChild(q).matrix, root.getChild(q).winners);
+				z++;
+			
 			}
 		}
+		Arrays.sort(list);
+
+		for(mList temp: list){
+			printBoard(temp.getMatrix());
+			if(validate(temp.getMatrix()) == 1) {
+				System.out.println("WINNING MOVE!");
+			} else { 
+				System.out.println("Wins for Child Branch: " + temp.getWins());
+			}
+			System.out.print("\n\n\n"); 
+		}
+	
 			
 	}
 	
