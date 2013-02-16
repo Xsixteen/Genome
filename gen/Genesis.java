@@ -6,12 +6,17 @@ import Jama.*;
 
 public class Genesis {
 
-	private static Matrix curBoard;
-	private static Tree T;
-	private int player;
-	private int statistic = 0;
 	public final int P_X = 1;
 	public final int P_O = -1;
+	
+	private static Matrix curBoard;
+	private static Tree T;
+	private int player, start, end;
+	private int statistic = 0;
+
+	  //////////////////////////
+	 //     Public Methods   //
+	//////////////////////////
 	
 	public Genesis(int aPlayer) {
 		double[][] empty = {{0,0,0},{0,0,0},{0,0,0}}; 
@@ -22,6 +27,7 @@ public class Genesis {
 		T = new Tree();
 	
 	}
+	//Getters / Setters
 	public Matrix getCurrentBoard() {
 		return curBoard;
 	}
@@ -38,6 +44,14 @@ public class Genesis {
 	public void updateMove(int player, int x, int y) {
 		curBoard.set(x, y, (double) player);
 	}
+	
+	public void create() {
+		updateRoot();
+		generate();
+		checkBoards(T.root);
+		countWins(T.root);
+	}
+	
 	//updates the root of the tree to the current matrix.
 	public void updateRoot() {
 		T = new Tree();
@@ -45,22 +59,102 @@ public class Genesis {
 	}
 	
 	//Generate against any matrix. 
-	public Matrix generate(Matrix matrix, int aPlayer) throws InterruptedException {
-		int moves = countZero(matrix);
+	public Matrix generate(Matrix matrix, int aPlayer) {
+		start = (int) System.currentTimeMillis();  
 		spin(T.root, matrix, aPlayer);
-		
+		end = (int) System.currentTimeMillis();  
 		return matrix;
 	}
 	
 	//Generate against the objects matrix
-	public void generate() throws InterruptedException {
-		int moves = countZero(curBoard);
+	public void generate() {
+		start = (int) System.currentTimeMillis();  
 		//Okay so now its O's turn. Leaving a possible of moves - 1 
 		spin(T.root, curBoard, player);
+		end = (int) System.currentTimeMillis();  
+	}
+
+	public int getStats() {
+		return statistic;
 	}
 	
+	public void printBoard(Matrix m) {
+		for (int i=0; i< m.getRowDimension(); i++) {
+			System.out.print("| ");
+			for(int j=0; j< m.getColumnDimension(); j++) {
+				if(m.get(i,j) == P_X) {
+					System.out.print(" X ");
+				} else if(m.get(i,j) == P_O) {
+					System.out.print(" O ");
+				} else {
+					System.out.print(" - ");
+				}
+			}
+			System.out.println(" |");
+		}
+	}
+	
+	//This function prunes the tree for only winning children leaves
+	public void checkBoards(Node root) {
+		for (int q=0; q < root.numChildren; q++) {
+			if(root.getChild(q).numChildren > 0) {
+					checkBoards(root.getChild(q));
+			} else {
+				//Validate Leaf Nodes only.
+				if(validate(root.getChild(q).matrix) != 1 || validate(root.getChild(q).matrix, (player*-1)) == 1) {
+					root.removeChild(q);
+				} else {
+					// This is a winning leaf
+					root.getChild(q).winners++;
+				}
+			}
+		}
+	
+		}
+	
+	public void countWins(Node root) {
+		if (root.numChildren > 0) {
+			for (int q=0; q < root.numChildren; q++) {
+					countWins(root.getChild(q));
+					root.winners = root.winners + root.getChild(q).winners;
+			}
+		} else { 
+			//root.winners++;
+		}
+	}
+	public void printChildrenWinTrees(Node root) {
+		mList[] list = new mList[root.numChildren];
+		int z = 0;
+		//Now Print!
+
+		for (int q=0; q < root.numChildren; q++) {
+			if(root.getChild(q).numChildren > 0){
+				list[z] = new mList(root.getChild(q).matrix, root.getChild(q).winners);
+				z++;
+			
+			}
+		}
+		Arrays.sort(list);
+
+		for(mList temp: list){
+			printBoard(temp.getMatrix());
+			if(validate(temp.getMatrix()) == 1) {
+				System.out.println("WINNING MOVE!");
+			} else { 
+				System.out.println("Wins for Child Branch: " + temp.getWins());
+			}
+			System.out.print("\n\n\n"); 
+		}
+	
+			
+	}
+	
+	  //////////////////////////
+	 //     Private Methods  //
+	//////////////////////////
+	
 	//Spin means spin through recursion! Used to generate a game tree from possible open spaces. 
-	private int spin(Node root, Matrix matrix, int Player) throws InterruptedException {
+	private int spin(Node root, Matrix matrix, int Player) {
 		int open = countZero(matrix);
 		Node n;
 		Matrix temp;
@@ -102,9 +196,6 @@ public class Genesis {
 		return 0;
 	}
 	
-	public int getStats() {
-		return statistic;
-	}
 	
 	private int countZero(Matrix matrix) {
 		int zeroes = 0;
@@ -117,21 +208,7 @@ public class Genesis {
 		return zeroes;
 	}
 	
-	public void printBoard(Matrix m) {
-		for (int i=0; i< m.getRowDimension(); i++) {
-			System.out.print("| ");
-			for(int j=0; j< m.getColumnDimension(); j++) {
-				if(m.get(i,j) == P_X) {
-					System.out.print(" X ");
-				} else if(m.get(i,j) == P_O) {
-					System.out.print(" O ");
-				} else {
-					System.out.print(" - ");
-				}
-			}
-			System.out.println(" |");
-		}
-	}
+
 	
 	private int validate(Matrix m) {
 		float x,y,z;
@@ -246,59 +323,6 @@ public class Genesis {
 		//Not a Winner Sorry Buddy
 		return 0;
 	}
-	//This function prunes the tree for only winning children leaves
-	public void checkBoards(Node root) {
-		for (int q=0; q < root.numChildren; q++) {
-			if(root.getChild(q).numChildren > 0) {
-					checkBoards(root.getChild(q));
-			} else {
-				//Validate Leaf Nodes only.
-				if(validate(root.getChild(q).matrix) != 1 || validate(root.getChild(q).matrix, (player*-1)) == 1) {
-					root.removeChild(q);
-				} else {
-					// This is a winning leaf
-					root.getChild(q).winners++;
-				}
-			}
-		}
-	
-		}
-	
-	public void countWins(Node root) {
-		if (root.numChildren > 0) {
-			for (int q=0; q < root.numChildren; q++) {
-					countWins(root.getChild(q));
-					root.winners = root.winners + root.getChild(q).winners;
-			}
-		} else { 
-			//root.winners++;
-		}
-	}
-	public void showChildrenWins(Node root) {
-		mList[] list = new mList[root.numChildren];
-		int z = 0;
-		//Now Print!
 
-		for (int q=0; q < root.numChildren; q++) {
-			if(root.getChild(q).numChildren > 0){
-				list[z] = new mList(root.getChild(q).matrix, root.getChild(q).winners);
-				z++;
-			
-			}
-		}
-		Arrays.sort(list);
-
-		for(mList temp: list){
-			printBoard(temp.getMatrix());
-			if(validate(temp.getMatrix()) == 1) {
-				System.out.println("WINNING MOVE!");
-			} else { 
-				System.out.println("Wins for Child Branch: " + temp.getWins());
-			}
-			System.out.print("\n\n\n"); 
-		}
-	
-			
-	}
 	
 }

@@ -40,7 +40,7 @@ public class Start {
 		System.out.println("Total memory (bytes): " +  Runtime.getRuntime().totalMemory());
 		System.out.println("Displaying Winning Branches for " + T.root.numChildren + " children");
 		g.countWins(T.root);
-		g.showChildrenWins(T.root);
+		g.printChildrenWinTrees(T.root);
 		end =  System.currentTimeMillis();  
 		System.out.println("This Program took: "+ ((end - start)/1000) + " Seconds to execute.");
 		
@@ -78,12 +78,8 @@ public class Start {
 				col = scanner.nextLine();
 				g.updateMove((-1*playerid), Integer.parseInt( row )-1, Integer.parseInt(col)-1);
 			} else if (menu.equals("2")) {
-				g.updateRoot();
-				g.generate();
-				T = g.getTree();
-				g.checkBoards(T.root);
-				g.countWins(T.root);
-				g.showChildrenWins(T.root);
+				g.create();
+				g.printChildrenWinTrees(g.getTree().root);
 				
 				System.out.println("Number of Nodes:: " + T.countNodes());
 			}
